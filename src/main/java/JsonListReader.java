@@ -15,11 +15,11 @@ public class JsonListReader<C> {
 
     private final Gson gson = new Gson();
 
-    public List<C> toJsonList(InputStream inputStream, Class<C> clazz) throws IOException {
-        return this.toJsonList(inputStream, clazz, null);
+    public List<C> fromJsonList(InputStream inputStream, Class<C> clazz) throws IOException {
+        return this.fromJsonList(inputStream, clazz, null);
     }
 
-    public List<C> toJsonList(InputStream inputStream, Class<C> clazz, Filter filter) throws IOException {
+    public List<C> fromJsonList(InputStream inputStream, Class<C> clazz, Filter filter) throws IOException {
         List<C> result = new ArrayList<C>();
 
         InputStreamReader inputStreamReader = new InputStreamReader(inputStream, UTF8);

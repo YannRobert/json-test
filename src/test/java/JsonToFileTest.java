@@ -77,7 +77,7 @@ public class JsonToFileTest {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(writer.getBuffer().toString().getBytes());
 
         JsonListReader jsonListReader = new JsonListReader<Bean>();
-        List<Bean> list = jsonListReader.toJsonList(inputStream, Bean.class);
+        List<Bean> list = jsonListReader.fromJsonList(inputStream, Bean.class);
 
         for (Bean readBean : list) {
             assertEquals(b, readBean);
@@ -131,7 +131,7 @@ public class JsonToFileTest {
 
         {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(writer.getBuffer().toString().getBytes());
-            List<Bean> list = jsonListReader.toJsonList(inputStream, Bean.class, filterAcceptJimName);
+            List<Bean> list = jsonListReader.fromJsonList(inputStream, Bean.class, filterAcceptJimName);
             assertEquals(1, list.size());
             for (Bean readBean : list) {
                 assertEquals(b2, readBean);
@@ -139,7 +139,7 @@ public class JsonToFileTest {
         }
         {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(writer.getBuffer().toString().getBytes());
-            List<Bean> list = jsonListReader.toJsonList(inputStream, Bean.class, filterAcceptBarValue);
+            List<Bean> list = jsonListReader.fromJsonList(inputStream, Bean.class, filterAcceptBarValue);
             assertEquals(2, list.size());
         }
 
