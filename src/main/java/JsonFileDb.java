@@ -1,19 +1,28 @@
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class JsonListReader<C> {
+public class JsonFileDb<C> {
 
     private final Charset UTF8 = Charset.forName("UTF-8");
 
     private final Gson gson = new Gson();
+
+    public void writeAsJson(C bean, Writer writer) throws IOException {
+        String lineAsJson = gson.toJson(bean);
+        writer.write(lineAsJson);
+        writer.write("\n");
+    }
+
+    public void writeListAsJson(List<C> beanList, Writer writer) throws IOException {
+        for (C bean : beanList) {
+            writeAsJson(bean, writer);
+        }
+    }
 
     public List<C> fromJsonList(InputStream inputStream, Class<C> clazz) throws IOException {
         return this.fromJsonList(inputStream, clazz, null);
@@ -29,7 +38,7 @@ public class JsonListReader<C> {
             C readBean = gson.fromJson(line, clazz);
             if (filter != null) {
                 if (filter.accept(readBean)) {
-                 result.add(readBean);
+                    result.add(readBean);
                 }
             } else {
                 result.add(readBean);

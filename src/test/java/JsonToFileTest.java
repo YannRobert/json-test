@@ -6,7 +6,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -43,11 +47,12 @@ public class JsonToFileTest {
 
     @Test
     public void shouldReadOneElement() throws IOException {
+        JsonFileDb jsonFileDb = new JsonFileDb<Bean>();
         StringWriter writer = new StringWriter();
         Bean b = new Bean();
         b.name = "foo\nhello";
         b.value = "bar";
-        writer.write(gson.toJson(b));
+        jsonFileDb.writeAsJson(b, writer);
         writer.close();
 
         logger.info("bean = " + b);
@@ -61,14 +66,14 @@ public class JsonToFileTest {
 
     @Test
     public void shouldReadTwoElement() throws IOException {
+        JsonFileDb jsonFileDb = new JsonFileDb<Bean>();
+
         StringWriter writer = new StringWriter();
         Bean b = new Bean();
         b.name = "foo\nhello";
         b.value = "bar";
-        writer.write(gson.toJson(b));
-        writer.write("\n");
-        writer.write(gson.toJson(b));
-        writer.write("\n");
+        jsonFileDb.writeAsJson(b, writer);
+        jsonFileDb.writeAsJson(b, writer);
         writer.close();
 
         logger.info("bean = " + b);
@@ -76,8 +81,7 @@ public class JsonToFileTest {
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(writer.getBuffer().toString().getBytes());
 
-        JsonListReader jsonListReader = new JsonListReader<Bean>();
-        List<Bean> list = jsonListReader.fromJsonList(inputStream, Bean.class);
+        List<Bean> list = jsonFileDb.fromJsonList(inputStream, Bean.class);
 
         for (Bean readBean : list) {
             assertEquals(b, readBean);
@@ -89,29 +93,31 @@ public class JsonToFileTest {
 
     @Test
     public void shouldFilterElement() throws IOException {
-        StringWriter writer = new StringWriter();
+
         Bean b1 = new Bean();
         {
             b1.name = "John";
             b1.value = "bar";
-            writer.write(gson.toJson(b1));
-            writer.write("\n");
             logger.info("bean = " + b1);
         }
         Bean b2 = new Bean();
         {
             b2.name = "Jim";
             b2.value = "bar";
-            writer.write(gson.toJson(b2));
-            writer.write("\n");
             logger.info("bean = " + b2);
         }
+
+        List<Bean> beanList = new ArrayList<Bean>();
+        beanList.add(b1);
+        beanList.add(b2);
+
+        JsonFileDb jsonFileDb = new JsonFileDb<Bean>();
+
+        StringWriter writer = new StringWriter();
+        jsonFileDb.writeListAsJson(beanList, writer);
         writer.close();
 
-
         logger.info("file content : " + writer.getBuffer());
-
-
 
         Filter<Bean> filterAcceptJimName = new Filter<Bean>() {
 
@@ -127,11 +133,10 @@ public class JsonToFileTest {
             }
         };
 
-        JsonListReader jsonListReader = new JsonListReader<Bean>();
 
         {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(writer.getBuffer().toString().getBytes());
-            List<Bean> list = jsonListReader.fromJsonList(inputStream, Bean.class, filterAcceptJimName);
+            List<Bean> list = jsonFileDb.fromJsonList(inputStream, Bean.class, filterAcceptJimName);
             assertEquals(1, list.size());
             for (Bean readBean : list) {
                 assertEquals(b2, readBean);
@@ -139,7 +144,7 @@ public class JsonToFileTest {
         }
         {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(writer.getBuffer().toString().getBytes());
-            List<Bean> list = jsonListReader.fromJsonList(inputStream, Bean.class, filterAcceptBarValue);
+            List<Bean> list = jsonFileDb.fromJsonList(inputStream, Bean.class, filterAcceptBarValue);
             assertEquals(2, list.size());
         }
 
